@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wizard's Dungeon</title>
+  <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a0f0a;
+      color: #d4b483;
+      font-family: 'Crimson Text', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background-image: radial-gradient(ellipse at center, #2a1a0e 0%, #1a0f0a 70%);
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      color: #f0c040;
+      text-shadow: 0 0 20px #f0a020, 0 2px 4px #000;
+      margin-bottom: 6px;
+      letter-spacing: 0.1em;
+    }
+
+    #subtitle {
+      font-style: italic;
+      color: #a08050;
+      margin-bottom: 16px;
+      font-size: 1rem;
+    }
+
+    #game-container {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    /* ── DUNGEON GRID ── */
+    #dungeon-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #level-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      color: #f0c040;
+      text-align: center;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(5, 90px);
+      grid-template-rows: repeat(5, 90px);
+      gap: 3px;
+      background: #0a0604;
+      border: 3px solid #5a3a1a;
+      padding: 4px;
+      box-shadow: 0 0 30px #f0802040, inset 0 0 20px #000;
+    }
+
+    .tile {
+      width: 90px; height: 90px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-size: 2.4rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: filter 0.15s, transform 0.1s;
+      position: relative;
+      user-select: none;
+    }
+
+    .tile-label {
+      font-size: 0.6rem;
+      font-family: 'Cinzel', serif;
+      color: #a08050;
+      margin-top: 2px;
+      letter-spacing: 0.05em;
+    }
+
+    .tile.floor  { background: #2a1e12; border: 1px solid #3a2a18; }
+    .tile.wall   { background: #1a1410; border: 1px solid #2a2010; cursor: default; }
+    .tile.player { background: #1a2a3a; border: 1px solid #2060a0; box-shadow: 0 0 12px #4090e0; }
+    .tile.enemy  { background: #2a1010; border: 1px solid #6a2010; cursor: crosshair; }
+    .tile.stairs { background: #1a2a1a; border: 1px solid #306030; }
+    .tile.exit-reached { background: #203a20; }
+
+    .tile.floor:hover  { filter: brightness(1.4); }
+    .tile.enemy:hover  { filter: brightness(1.3); transform: scale(1.05); }
+    .tile.stairs:hover { filter: brightness(1.4); }
+
+    .tile.hit-anim { animation: hit 0.3s ease; }
+    @keyframes hit {
+      0%   { background: #8b0000; }
+      100% { background: inherit; }
+    }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      width: 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .panel {
+      background: #1e1208;
+      border: 2px solid #5a3a1a;
+      border-radius: 6px;
+      padding: 12px;
+      box-shadow: inset 0 0 10px #00000080;
+    }
+
+    .panel h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      color: #f0c040;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #5a3a1a;
+      padding-bottom: 4px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+    }
+
+    .stat-label { color: #a08050; }
+    .stat-val   { color: #f0d090; font-weight: 600; }
+
+    .bar-wrap {
+      background: #0a0604;
+      border-radius: 3px;
+      height: 10px;
+      flex: 1;
+      margin: 0 8px;
+      overflow: hidden;
+    }
+
+    .bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
+    .bar-hp    { background: linear-gradient(90deg, #c02020, #e05050); }
+    .bar-mana  { background: linear-gradient(90deg, #2040a0, #4080e0); }
+
+    #enemy-panel .enemy-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      color: #e08050;
+    }
+
+    #log {
+      height: 180px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #c0a060;
+    }
+
+    #log p { margin-bottom: 2px; }
+    #log p.good  { color: #60c060; }
+    #log p.bad   { color: #e06060; }
+    #log p.info  { color: #a0c0e0; }
+    #log p.gold  { color: #f0c040; }
+
+    /* ── OVERLAY ── */
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #00000090;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    #overlay.show { display: flex; }
+
+    #overlay-box {
+      background: #1e1208;
+      border: 3px solid #f0c040;
+      border-radius: 10px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 0 40px #f0a020;
+      max-width: 360px;
+    }
+
+    #overlay-box h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      color: #f0c040;
+      margin-bottom: 12px;
+    }
+
+    #overlay-box p {
+      font-size: 1.1rem;
+      color: #d4b483;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    button {
+      font-family: 'Cinzel', serif;
+      background: #3a2010;
+      color: #f0c040;
+      border: 2px solid #f0a020;
+      border-radius: 6px;
+      padding: 10px 24px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      letter-spacing: 0.05em;
+    }
+
+    button:hover { background: #5a3020; transform: scale(1.04); }
+  </style>
+</head>
+<body>
+
+<h1>⚔️ Wizard's Dungeon ⚔️</h1>
+<p id="subtitle">Click floor tiles to move. Click enemies to attack.</p>
+
+<div id="game-container">
+
+  <div id="dungeon-wrap">
+    <div id="level-title">Level 1 — The Stone Cellar</div>
+    <div id="grid"></div>
+  </div>
+
+  <div id="sidebar">
+
+    <div class="panel" id="player-panel">
+      <h2>🧙 Aldric the Wizard</h2>
+      <div class="stat-row">
+        <span class="stat-label">HP</span>
+        <div class="bar-wrap"><div class="bar bar-hp" id="bar-hp"></div></div>
+        <span class="stat-val" id="txt-hp">100/100</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">MP</span>
+        <div class="bar-wrap"><div class="bar bar-mana" id="bar-mana"></div></div>
+        <span class="stat-val" id="txt-mana">80/80</span>
+      </div>
+      <div class="stat-row"><span class="stat-label">Level</span><span class="stat-val" id="txt-lvl">1</span></div>
+      <div class="stat-row"><span class="stat-label">XP</span><span class="stat-val" id="txt-xp">0</span></div>
+      <div class="stat-row"><span class="stat-label">Gold</span><span class="stat-val" id="txt-gold">0 🪙</span></div>
+      <div class="stat-row"><span class="stat-label">Attack</span><span class="stat-val" id="txt-atk">25</span></div>
+    </div>
+
+    <div class="panel" id="enemy-panel">
+      <h2>👹 Enemy</h2>
+      <div id="enemy-info" style="color:#a08050;font-style:italic">No enemy targeted</div>
+    </div>
+
+    <div class="panel">
+      <h2>📜 Combat Log</h2>
+      <div id="log"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Overlay for win/lose/levelup -->
+<div id="overlay">
+  <div id="overlay-box">
+    <h2 id="overlay-title">Victory!</h2>
+    <p id="overlay-msg"></p>
+    <button id="overlay-btn">Continue</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  GAME DATA
+// ══════════════════════════════════════════════
+
+const LEVELS = [
+  {
+    name: "Level 1 — The Stone Cellar",
+    enemies: [
+      { name:"Giant Rat",   icon:"🐀", hp:20, maxHp:20, atk:5,  xp:10, gold:3  },
+      { name:"Goblin",      icon:"👺", hp:30, maxHp:30, atk:8,  xp:15, gold:5  },
+      { name:"Cave Bat",    icon:"🦇", hp:18, maxHp:18, atk:4,  xp:8,  gold:2  },
+    ],
+    enemyCount: 4,
+    bgLabel: "Stone Cellar",
+  },
+  {
+    name: "Level 2 — The Crypt",
+    enemies: [
+      { name:"Skeleton",    icon:"💀", hp:35, maxHp:35, atk:10, xp:20, gold:8  },
+      { name:"Zombie",      icon:"🧟", hp:45, maxHp:45, atk:12, xp:25, gold:10 },
+      { name:"Wraith",      icon:"👻", hp:28, maxHp:28, atk:9,  xp:18, gold:7  },
+    ],
+    enemyCount: 4,
+    bgLabel: "Dark Crypt",
+  },
+  {
+    name: "Level 3 — The Dark Keep",
+    enemies: [
+      { name:"Orc Guard",   icon:"👹", hp:50, maxHp:50, atk:13, xp:30, gold:15 },
+      { name:"Dark Knight", icon:"🗡️",  hp:55, maxHp:55, atk:14, xp:35, gold:18 },
+      { name:"Dragon Boss", icon:"🐉", hp:80, maxHp:80, atk:15, xp:60, gold:50, isBoss:true },
+    ],
+    enemyCount: 3,
+    bgLabel: "Dark Keep",
+    isFinal: true,
+  },
+];
+
+const GRID_SIZE = 5;
+
+let player = {
+  row: 0, col: 0,
+  hp: 100, maxHp: 100,
+  mana: 80, maxMana: 80,
+  atk: 25, def: 5,
+  level: 1, xp: 0, gold: 0,
+};
+
+let currentLevel = 0;
+let grid = [];       // 2D array of {type, enemy}
+let enemies = [];    // active enemies on grid
+
+// ══════════════════════════════════════════════
+//  MAP GENERATION
+// ══════════════════════════════════════════════
+
+function deepCloneEnemies(levelDef) {
+  const pool = levelDef.enemies.map(e => ({...e, hp: e.maxHp}));
+  const result = [];
+  const count = levelDef.enemyCount;
+  // Always include boss if present
+  const bosses = pool.filter(e => e.isBoss);
+  const normals = pool.filter(e => !e.isBoss);
+  bosses.forEach(b => result.push({...b}));
+  while (result.length < count) {
+    const pick = normals[Math.floor(Math.random() * normals.length)];
+    result.push({...pick});
+  }
+  return result;
+}
+
+function generateMap(levelIdx) {
+  const def = LEVELS[levelIdx];
+  // Build all-floor grid
+  const g = [];
+  for (let r = 0; r < GRID_SIZE; r++) {
+    g.push([]);
+    for (let c = 0; c < GRID_SIZE; c++) {
+      g[r].push({ type: 'floor', enemy: null });
+    }
+  }
+  // Add some walls (but keep it walkable)
+  const wallCandidates = [];
+  for (let r = 0; r < GRID_SIZE; r++)
+    for (let c = 0; c < GRID_SIZE; c++)
+      if (!(r === 0 && c === 0) && !(r === GRID_SIZE-1 && c === GRID_SIZE-1))
+        wallCandidates.push([r,c]);
+  shuffle(wallCandidates);
+  let wallsAdded = 0;
+  for (const [r,c] of wallCandidates) {
+    if (wallsAdded >= 4) break;
+    g[r][c].type = 'wall';
+    if (!isFullyConnected(g)) g[r][c].type = 'floor'; // revert if breaks connectivity
+    else wallsAdded++;
+  }
+  // Place stairs at bottom-right or nearby floor
+  let stairsPlaced = false;
+  const stairCandidates = [[4,4],[4,3],[3,4],[3,3]];
+  for (const [r,c] of stairCandidates) {
+    if (g[r][c].type === 'floor') { g[r][c].type = 'stairs'; stairsPlaced = true; break; }
+  }
+  if (!stairsPlaced) { // fallback
+    for (let r=4;r>=0;r--) for(let c=4;c>=0;c--) {
+      if (g[r][c].type==='floor' && !(r===0&&c===0)) { g[r][c].type='stairs'; stairsPlaced=true; break; }
+      if (stairsPlaced) break;
+    }
+  }
+  // Place player at top-left
+  player.row = 0; player.col = 0;
+  g[0][0].type = 'floor';
+  // Place enemies
+  enemies = deepCloneEnemies(def);
+  const floorTiles = [];
+  for (let r=0;r<GRID_SIZE;r++) for(let c=0;c<GRID_SIZE;c++)
+    if (g[r][c].type==='floor' && !(r===0&&c===0)) floorTiles.push([r,c]);
+  shuffle(floorTiles);
+  enemies.forEach((e, i) => {
+    if (i < floorTiles.length) {
+      const [r,c] = floorTiles[i];
+      e.row = r; e.col = c;
+      g[r][c].enemy = e;
+    }
+  });
+  grid = g;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function isFullyConnected(g) {
+  // BFS from (0,0) to check all non-wall tiles reachable
+  const visited = Array.from({length:GRID_SIZE}, () => Array(GRID_SIZE).fill(false));
+  const queue = [[0,0]];
+  visited[0][0] = true;
+  let count = 1;
+  while (queue.length) {
+    const [r,c] = queue.shift();
+    for (const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      const nr=r+dr, nc=c+dc;
+      if (nr<0||nr>=GRID_SIZE||nc<0||nc>=GRID_SIZE) continue;
+      if (visited[nr][nc] || g[nr][nc].type==='wall') continue;
+      visited[nr][nc] = true; count++; queue.push([nr,nc]);
+    }
+  }
+  let nonWall = 0;
+  for (let r=0;r<GRID_SIZE;r++) for(let c=0;c<GRID_SIZE;c++) if(g[r][c].type!=='wall') nonWall++;
+  return count === nonWall;
+}
+
+// ══════════════════════════════════════════════
+//  RENDERING
+// ══════════════════════════════════════════════
+
+function render() {
+  const gridEl = document.getElementById('grid');
+  gridEl.innerHTML = '';
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const cell = grid[r][c];
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      tile.dataset.r = r; tile.dataset.c = c;
+
+      if (r === player.row && c === player.col) {
+        tile.classList.add('player');
+        tile.innerHTML = '🧙<span class="tile-label">You</span>';
+      } else if (cell.type === 'wall') {
+        tile.classList.add('wall');
+        tile.textContent = '🧱';
+      } else if (cell.enemy) {
+        tile.classList.add('enemy');
+        const hpPct = Math.round((cell.enemy.hp / cell.enemy.maxHp) * 100);
+        tile.innerHTML = `${cell.enemy.icon}<span class="tile-label">${hpPct}% HP</span>`;
+      } else if (cell.type === 'stairs') {
+        tile.classList.add('stairs');
+        tile.innerHTML = '🪜<span class="tile-label">Stairs</span>';
+      } else {
+        tile.classList.add('floor');
+      }
+
+      tile.addEventListener('click', () => handleTileClick(r, c));
+      gridEl.appendChild(tile);
+    }
+  }
+  updateStats();
+}
+
+function updateStats() {
+  const hpPct = (player.hp / player.maxHp) * 100;
+  const manaPct = (player.mana / player.maxMana) * 100;
+  document.getElementById('bar-hp').style.width = hpPct + '%';
+  document.getElementById('bar-mana').style.width = manaPct + '%';
+  document.getElementById('txt-hp').textContent = `${player.hp}/${player.maxHp}`;
+  document.getElementById('txt-mana').textContent = `${player.mana}/${player.maxMana}`;
+  document.getElementById('txt-lvl').textContent = player.level;
+  document.getElementById('txt-xp').textContent = player.xp;
+  document.getElementById('txt-gold').textContent = player.gold + ' 🪙';
+  document.getElementById('txt-atk').textContent = player.atk;
+}
+
+// ══════════════════════════════════════════════
+//  INPUT HANDLING
+// ══════════════════════════════════════════════
+
+function handleTileClick(r, c) {
+  const cell = grid[r][c];
+
+  // Attack enemy
+  if (cell.enemy) {
+    attackEnemy(r, c, cell.enemy);
+    return;
+  }
+
+  if (cell.type === 'wall') return;
+
+  // Move (only to adjacent tiles)
+  const dr = Math.abs(r - player.row);
+  const dc = Math.abs(c - player.col);
+  if (dr + dc !== 1) { log('Too far to move there.', 'info'); return; }
+
+  player.row = r; player.col = c;
+
+  // Stepped on stairs?
+  if (cell.type === 'stairs') {
+    nextLevel();
+    return;
+  }
+
+  render();
+}
+
+// ══════════════════════════════════════════════
+//  COMBAT
+// ══════════════════════════════════════════════
+
+function attackEnemy(r, c, enemy) {
+  // Must be adjacent
+  const dr = Math.abs(r - player.row);
+  const dc = Math.abs(c - player.col);
+  if (dr + dc > 1) { log('Move closer to attack!', 'info'); return; }
+
+  // Player attacks
+  const dmg = Math.max(1, player.atk - Math.floor(Math.random() * 5));
+  enemy.hp -= dmg;
+  log(`🔥 You cast Fireball at ${enemy.name} for <b>${dmg}</b> damage!`, 'good');
+
+  // Flash tile
+  flashTile(r, c);
+
+  if (enemy.hp <= 0) {
+    // Enemy dies
+    log(`💥 ${enemy.name} is slain!`, 'good');
+    log(`+${enemy.xp} XP, +${enemy.gold} 🪙`, 'gold');
+    player.xp += enemy.xp;
+    player.gold += enemy.gold;
+    grid[r][c].enemy = null;
+    // Remove from enemies array
+    enemies = enemies.filter(e => e !== enemy);
+    document.getElementById('enemy-info').innerHTML = '<span style="color:#a08050;font-style:italic">No enemy targeted</span>';
+
+    // Check level complete
+    if (enemies.length === 0 && LEVELS[currentLevel].isFinal) {
+      render();
+      setTimeout(() => showOverlay('⚔️ Victory! ⚔️',
+        `You have slain the Dragon and cleared the dungeon!\n\nFinal Stats: Level ${player.level} | Gold: ${player.gold} 🪙 | XP: ${player.xp}`,
+        'Play Again', restartGame), 600);
+      return;
+    }
+    render();
+    return;
+  }
+
+  // Update enemy panel
+  showEnemyPanel(enemy);
+
+  // Enemy counter-attacks
+  const eDmg = Math.max(1, enemy.atk - player.def - Math.floor(Math.random() * 4));
+  player.hp = Math.max(0, player.hp - eDmg);
+  log(`⚔️ ${enemy.name} hits you for <b>${eDmg}</b> damage!`, 'bad');
+
+  if (player.hp <= 0) {
+    render();
+    setTimeout(() => showOverlay('💀 Defeated 💀',
+      `You have fallen in the dungeon.\n\nYou reached Level ${player.level} with ${player.gold} gold.`,
+      'Try Again', restartGame), 400);
+    return;
+  }
+
+  render();
+}
+
+function showEnemyPanel(enemy) {
+  const hpPct = Math.round((enemy.hp / enemy.maxHp) * 100);
+  document.getElementById('enemy-info').innerHTML =
+    `<div class="enemy-name">${enemy.icon} ${enemy.name}</div>
+     <div class="stat-row" style="margin-top:6px">
+       <span class="stat-label">HP</span>
+       <div class="bar-wrap"><div class="bar bar-hp" style="width:${hpPct}%"></div></div>
+       <span class="stat-val">${enemy.hp}/${enemy.maxHp}</span>
+     </div>
+     <div class="stat-row"><span class="stat-label">Attack</span><span class="stat-val">${enemy.atk}</span></div>`;
+}
+
+function flashTile(r, c) {
+  const idx = r * GRID_SIZE + c;
+  const tiles = document.getElementById('grid').children;
+  if (tiles[idx]) {
+    tiles[idx].classList.add('hit-anim');
+    setTimeout(() => tiles[idx]?.classList.remove('hit-anim'), 350);
+  }
+}
+
+// ══════════════════════════════════════════════
+//  LEVEL PROGRESSION
+// ══════════════════════════════════════════════
+
+function nextLevel() {
+  currentLevel++;
+  if (currentLevel >= LEVELS.length) {
+    // Should have been caught by boss kill, but just in case
+    showOverlay('⚔️ Victory! ⚔️', 'You have cleared all three dungeon levels!', 'Play Again', restartGame);
+    return;
+  }
+  // Level up player
+  player.level++;
+  player.maxHp += 15; player.hp = player.maxHp;
+  player.maxMana += 10; player.mana = player.maxMana;
+  player.atk += 5; player.def += 1;
+
+  showOverlay(
+    `🌟 Level ${player.level}!`,
+    `You descend deeper into the dungeon.\n\n${LEVELS[currentLevel].name}\n\nHP restored. Stats increased!`,
+    'Descend',
+    () => {
+      generateMap(currentLevel);
+      document.getElementById('level-title').textContent = LEVELS[currentLevel].name;
+      log(`⬇️ Entered ${LEVELS[currentLevel].name}`, 'info');
+      render();
+    }
+  );
+}
+
+// ══════════════════════════════════════════════
+//  OVERLAY
+// ══════════════════════════════════════════════
+
+function showOverlay(title, msg, btnText, callback) {
+  document.getElementById('overlay-title').textContent = title;
+  document.getElementById('overlay-msg').textContent = msg;
+  document.getElementById('overlay-btn').textContent = btnText;
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('overlay-btn').onclick = () => {
+    document.getElementById('overlay').classList.remove('show');
+    callback();
+  };
+}
+
+// ══════════════════════════════════════════════
+//  LOGGING
+// ══════════════════════════════════════════════
+
+function log(msg, cls = '') {
+  const logEl = document.getElementById('log');
+  const p = document.createElement('p');
+  if (cls) p.className = cls;
+  p.innerHTML = msg;
+  logEl.prepend(p);
+  // Keep log trimmed
+  while (logEl.children.length > 30) logEl.removeChild(logEl.lastChild);
+}
+
+// ══════════════════════════════════════════════
+//  INIT / RESTART
+// ══════════════════════════════════════════════
+
+function restartGame() {
+  player = { row:0, col:0, hp:100, maxHp:100, mana:80, maxMana:80, atk:25, def:5, level:1, xp:0, gold:0 };
+  currentLevel = 0;
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('enemy-info').innerHTML = '<span style="color:#a08050;font-style:italic">No enemy targeted</span>';
+  document.getElementById('level-title').textContent = LEVELS[0].name;
+  generateMap(0);
+  log('⚔️ Your quest begins. Good luck, wizard!', 'info');
+  render();
+}
+
+restartGame();
+</script>
+</body>
+</html>
