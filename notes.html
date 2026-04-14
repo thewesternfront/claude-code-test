@@ -475,6 +475,140 @@
     .ctx-action-btn:hover {
       background: #3e3e42;
     }
+
+    /* ── Table ── */
+    .nb-table {
+      border-collapse: collapse;
+      table-layout: fixed;
+      margin: 8px 0;
+      display: inline-table;
+    }
+
+    .nb-table td {
+      border: 1px solid #555;
+      padding: 5px 26px 5px 8px;
+      min-width: 40px;
+      width: 120px;
+      vertical-align: top;
+      position: relative;
+      word-break: break-word;
+    }
+
+    .col-resizer {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      cursor: col-resize;
+      z-index: 2;
+      background: transparent;
+      user-select: none;
+    }
+
+    .col-resizer:hover,
+    .col-resizer.resizing {
+      background: var(--accent);
+      opacity: 0.8;
+    }
+
+    /* ── Table Modal ── */
+    #table-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #table-modal.open {
+      display: flex;
+    }
+
+    #table-modal-box {
+      background: #2d2d30;
+      border: 1px solid #3e3e42;
+      border-radius: 8px;
+      padding: 22px 26px;
+      min-width: 250px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+    }
+
+    .tbl-modal-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 18px;
+    }
+
+    .tbl-modal-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .tbl-modal-field label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .tbl-modal-field input[type="number"] {
+      width: 72px;
+      background: #1e1e1e;
+      border: 1px solid #3e3e42;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      outline: none;
+      text-align: center;
+    }
+
+    .tbl-modal-field input[type="number"]:focus {
+      border-color: var(--accent);
+    }
+
+    .tbl-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .tbl-modal-actions button {
+      font-family: inherit;
+      font-size: 13px;
+      padding: 5px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid #3e3e42;
+      transition: background 0.12s;
+    }
+
+    #tbl-cancel {
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    #tbl-cancel:hover {
+      background: #3e3e42;
+      color: var(--text);
+    }
+
+    #tbl-insert {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    #tbl-insert:hover {
+      background: #005fa3;
+    }
   </style>
 </head>
 <body>
@@ -554,6 +688,11 @@
 
       <!-- Clear -->
       <button class="tb-btn" data-cmd="removeFormat" title="Clear Formatting">Clear</button>
+
+      <span class="tb-sep"></span>
+
+      <!-- Table -->
+      <button class="tb-btn" id="btn-insert-table" title="Insert Table">&#9638; Table</button>
     </div>
 
     <!-- Editor header -->
@@ -583,6 +722,25 @@
 
 <!-- Hidden file input for load -->
 <input type="file" id="file-input" accept=".json" style="display:none">
+
+<!-- Insert Table Modal -->
+<div id="table-modal">
+  <div id="table-modal-box">
+    <div class="tbl-modal-title">Insert Table</div>
+    <div class="tbl-modal-field">
+      <label>Columns (horizontal)</label>
+      <input type="number" id="tbl-cols" value="3" min="1" max="20">
+    </div>
+    <div class="tbl-modal-field">
+      <label>Rows (vertical)</label>
+      <input type="number" id="tbl-rows" value="3" min="1" max="100">
+    </div>
+    <div class="tbl-modal-actions">
+      <button id="tbl-cancel">Cancel</button>
+      <button id="tbl-insert">Insert</button>
+    </div>
+  </div>
+</div>
 
 <!-- Context Menu -->
 <div id="ctx-menu">
@@ -1141,6 +1299,127 @@
     ctxRestoreSelection();
     document.execCommand('removeFormat', false, null);
     ctxHide();
+  });
+
+  // ── Insert Table ─────────────────────────────────────────────────────────
+
+  const tableModal = document.getElementById('table-modal');
+  let tableInsertRange = null;
+
+  document.getElementById('btn-insert-table').addEventListener('mousedown', e => {
+    e.preventDefault();
+    const sel = window.getSelection();
+    tableInsertRange = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).cloneRange() : null;
+    tableModal.classList.add('open');
+    setTimeout(() => document.getElementById('tbl-cols').focus(), 50);
+  });
+
+  document.getElementById('tbl-cancel').addEventListener('click', () => tableModal.classList.remove('open'));
+
+  tableModal.addEventListener('click', e => {
+    if (e.target === tableModal) tableModal.classList.remove('open');
+  });
+
+  document.getElementById('tbl-insert').addEventListener('click', () => {
+    const cols = Math.max(1, Math.min(20,  parseInt(document.getElementById('tbl-cols').value) || 3));
+    const rows = Math.max(1, Math.min(100, parseInt(document.getElementById('tbl-rows').value) || 3));
+    tableModal.classList.remove('open');
+    doInsertTable(cols, rows);
+  });
+
+  ['tbl-cols', 'tbl-rows'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter')  document.getElementById('tbl-insert').click();
+      if (e.key === 'Escape') tableModal.classList.remove('open');
+    });
+  });
+
+  function doInsertTable(cols, rows) {
+    const table = document.createElement('table');
+    table.className = 'nb-table';
+
+    const colgroup = document.createElement('colgroup');
+    for (let c = 0; c < cols; c++) {
+      const col = document.createElement('col');
+      col.style.width = '120px';
+      colgroup.appendChild(col);
+    }
+    table.appendChild(colgroup);
+
+    const tbody = document.createElement('tbody');
+    for (let r = 0; r < rows; r++) {
+      const tr = document.createElement('tr');
+      for (let c = 0; c < cols; c++) {
+        const td = document.createElement('td');
+        const resizer = document.createElement('div');
+        resizer.className = 'col-resizer';
+        resizer.contentEditable = 'false';
+        td.appendChild(resizer);
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+
+    // Insert at saved cursor position, or append to editor
+    editor.focus();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    if (tableInsertRange) {
+      sel.addRange(tableInsertRange);
+      const range = sel.getRangeAt(0);
+      range.collapse(false);
+      range.insertNode(table);
+    } else {
+      editor.appendChild(table);
+    }
+
+    // Add a paragraph after the table so the user can keep typing
+    const p = document.createElement('p');
+    p.innerHTML = '<br>';
+    table.after(p);
+
+    // Move cursor into the first cell
+    const firstCell = table.querySelector('td');
+    if (firstCell) {
+      const r = document.createRange();
+      r.setStart(firstCell, 0);
+      r.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(r);
+    }
+
+    tableInsertRange = null;
+  }
+
+  // ── Column resize drag ────────────────────────────────────────────────────
+
+  let colResize = null;
+
+  editor.addEventListener('mousedown', e => {
+    if (!e.target.classList.contains('col-resizer')) return;
+    e.preventDefault();
+    const td   = e.target.closest('td');
+    const cols = td.closest('table.nb-table').querySelectorAll('col');
+    e.target.classList.add('resizing');
+    colResize = {
+      handle:  e.target,
+      col:     cols[td.cellIndex],
+      startX:  e.clientX,
+      startW:  td.offsetWidth,
+    };
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!colResize) return;
+    const newW = Math.max(40, colResize.startW + (e.clientX - colResize.startX));
+    colResize.col.style.width = newW + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!colResize) return;
+    colResize.handle.classList.remove('resizing');
+    colResize = null;
   });
 
   // ── Editor events ────────────────────────────────────────────────────────
