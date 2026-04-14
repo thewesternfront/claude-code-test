@@ -363,6 +363,118 @@
     .sb-btn:hover {
       background: rgba(255,255,255,0.28);
     }
+
+    /* ── Context Menu ── */
+    #ctx-menu {
+      position: fixed;
+      display: none;
+      background: #2d2d30;
+      border: 1px solid #3e3e42;
+      border-radius: 6px;
+      padding: 10px;
+      z-index: 9999;
+      min-width: 168px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+      user-select: none;
+    }
+
+    .ctx-section {
+      font-size: 10px;
+      font-weight: 600;
+      color: #858585;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 1px 5px;
+    }
+
+    .ctx-sep {
+      height: 1px;
+      background: #3e3e42;
+      margin: 7px 0;
+    }
+
+    .ctx-color-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+
+    .ctx-color-swatch {
+      width: 30px;
+      height: 22px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: transform 0.1s, border-color 0.1s;
+      padding: 0;
+    }
+
+    .ctx-color-swatch:hover {
+      transform: scale(1.12);
+      border-color: rgba(255,255,255,0.55);
+    }
+
+    .ctx-format-btns {
+      display: flex;
+      gap: 4px;
+    }
+
+    .ctx-fmt-btn {
+      flex: 1;
+      background: transparent;
+      border: 1px solid #3e3e42;
+      color: #d4d4d4;
+      font-size: 13px;
+      font-family: inherit;
+      padding: 4px 2px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.12s, border-color 0.12s;
+      line-height: 1.3;
+    }
+
+    .ctx-fmt-btn:hover {
+      background: #3e3e42;
+      border-color: #555;
+    }
+
+    .ctx-select {
+      width: 100%;
+      background: #1e1e1e;
+      border: 1px solid #3e3e42;
+      color: #d4d4d4;
+      font-size: 12.5px;
+      font-family: inherit;
+      padding: 4px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      outline: none;
+      margin-top: 5px;
+    }
+
+    .ctx-select:hover,
+    .ctx-select:focus {
+      border-color: #0078d4;
+    }
+
+    .ctx-action-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid #3e3e42;
+      color: #d4d4d4;
+      font-size: 12.5px;
+      font-family: inherit;
+      padding: 5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.12s;
+    }
+
+    .ctx-action-btn:hover {
+      background: #3e3e42;
+    }
   </style>
 </head>
 <body>
@@ -471,6 +583,57 @@
 
 <!-- Hidden file input for load -->
 <input type="file" id="file-input" accept=".json" style="display:none">
+
+<!-- Context Menu -->
+<div id="ctx-menu">
+  <div class="ctx-section">Text Color</div>
+  <div class="ctx-color-grid" id="ctx-color-grid"></div>
+
+  <div class="ctx-sep"></div>
+
+  <div class="ctx-section">Formatting</div>
+  <div class="ctx-format-btns">
+    <button class="ctx-fmt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+    <button class="ctx-fmt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+    <button class="ctx-fmt-btn" data-cmd="underline" title="Underline"><u>U</u></button>
+    <button class="ctx-fmt-btn" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+  </div>
+
+  <div class="ctx-sep"></div>
+
+  <div class="ctx-section">Lists</div>
+  <div class="ctx-format-btns">
+    <button class="ctx-fmt-btn" data-cmd="insertUnorderedList" title="Bullet List">&#8226; Bullet</button>
+    <button class="ctx-fmt-btn" data-cmd="insertOrderedList" title="Numbered List">1. Number</button>
+  </div>
+
+  <div class="ctx-sep"></div>
+
+  <div class="ctx-section">Font</div>
+  <select class="ctx-select" id="ctx-font">
+    <option value="">Font Family</option>
+    <option value="Inter, sans-serif">Inter</option>
+    <option value="Arial, sans-serif">Arial</option>
+    <option value="Georgia, serif">Georgia</option>
+    <option value="'Courier New', monospace">Courier New</option>
+    <option value="'Times New Roman', serif">Times New Roman</option>
+    <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
+  </select>
+  <select class="ctx-select" id="ctx-size">
+    <option value="">Font Size</option>
+    <option value="1">Small (10pt)</option>
+    <option value="2">Normal (13pt)</option>
+    <option value="3">Medium (16pt)</option>
+    <option value="4">Large (18pt)</option>
+    <option value="5">X-Large (24pt)</option>
+    <option value="6">XX-Large (32pt)</option>
+    <option value="7">Huge (48pt)</option>
+  </select>
+
+  <div class="ctx-sep"></div>
+
+  <button class="ctx-action-btn" id="ctx-clear">Clear Formatting</button>
+</div>
 
 <script>
   // ── State ────────────────────────────────────────────────────────────────
@@ -852,6 +1015,124 @@
       statusMsg.classList.remove('visible');
     }, 2500);
   }
+
+  // ── Context Menu ─────────────────────────────────────────────────────────
+
+  const ctxMenu = document.getElementById('ctx-menu');
+  let ctxSavedRange = null;
+
+  const CTX_PALETTE = [
+    '#ffffff', '#d4d4d4', '#969696', '#4a4a4a',
+    '#ff6b6b', '#ff9f43', '#ffd93d', '#6bcb77',
+    '#4ecdc4', '#45b7d1', '#4a90d9', '#a855f7',
+    '#ec4899', '#f43f5e', '#84cc16', '#06b6d4',
+  ];
+
+  // Build color grid
+  const ctxColorGrid = document.getElementById('ctx-color-grid');
+  CTX_PALETTE.forEach(color => {
+    const swatch = document.createElement('button');
+    swatch.className = 'ctx-color-swatch';
+    swatch.style.background = color;
+    swatch.title = color;
+    swatch.addEventListener('mousedown', e => {
+      e.preventDefault();
+      ctxRestoreSelection();
+      document.execCommand('foreColor', false, color);
+      ctxHide();
+    });
+    ctxColorGrid.appendChild(swatch);
+  });
+
+  function ctxSaveSelection() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      ctxSavedRange = sel.getRangeAt(0).cloneRange();
+    }
+  }
+
+  function ctxRestoreSelection() {
+    if (ctxSavedRange) {
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(ctxSavedRange);
+    }
+  }
+
+  function ctxShow(x, y) {
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    ctxMenu.style.display = 'block';
+    // Clamp so menu stays inside viewport
+    const rect = ctxMenu.getBoundingClientRect();
+    if (rect.right > window.innerWidth - 8) {
+      ctxMenu.style.left = Math.max(8, x - rect.width) + 'px';
+    }
+    if (rect.bottom > window.innerHeight - 8) {
+      ctxMenu.style.top = Math.max(8, y - rect.height) + 'px';
+    }
+  }
+
+  function ctxHide() {
+    ctxMenu.style.display = 'none';
+  }
+
+  editor.addEventListener('contextmenu', e => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.toString().trim() === '') {
+      ctxHide();
+      return;
+    }
+    e.preventDefault();
+    ctxSaveSelection();
+    ctxShow(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('mousedown', e => {
+    if (!ctxMenu.contains(e.target)) {
+      ctxHide();
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') ctxHide();
+  });
+
+  // Formatting buttons
+  document.querySelectorAll('.ctx-fmt-btn[data-cmd]').forEach(btn => {
+    btn.addEventListener('mousedown', e => {
+      e.preventDefault();
+      ctxRestoreSelection();
+      document.execCommand(btn.dataset.cmd, false, null);
+      ctxHide();
+    });
+  });
+
+  // Font family
+  document.getElementById('ctx-font').addEventListener('change', function() {
+    if (!this.value) return;
+    ctxRestoreSelection();
+    document.execCommand('fontName', false, this.value);
+    this.value = '';
+    ctxHide();
+  });
+
+  // Font size
+  document.getElementById('ctx-size').addEventListener('change', function() {
+    if (!this.value) return;
+    ctxRestoreSelection();
+    document.execCommand('fontSize', false, this.value);
+    this.value = '';
+    ctxHide();
+  });
+
+  // Clear formatting
+  document.getElementById('ctx-clear').addEventListener('mousedown', e => {
+    e.preventDefault();
+    ctxRestoreSelection();
+    document.execCommand('removeFormat', false, null);
+    ctxHide();
+  });
 
   // ── Editor events ────────────────────────────────────────────────────────
 
