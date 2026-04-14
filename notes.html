@@ -512,6 +512,24 @@
       opacity: 0.8;
     }
 
+    .row-resizer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 5px;
+      cursor: row-resize;
+      z-index: 2;
+      background: transparent;
+      user-select: none;
+    }
+
+    .row-resizer:hover,
+    .row-resizer.resizing {
+      background: var(--accent);
+      opacity: 0.8;
+    }
+
     /* ── Table Modal ── */
     #table-modal {
       display: none;
@@ -1351,10 +1369,14 @@
       const tr = document.createElement('tr');
       for (let c = 0; c < cols; c++) {
         const td = document.createElement('td');
-        const resizer = document.createElement('div');
-        resizer.className = 'col-resizer';
-        resizer.contentEditable = 'false';
-        td.appendChild(resizer);
+        const colResizer = document.createElement('div');
+        colResizer.className = 'col-resizer';
+        colResizer.contentEditable = 'false';
+        td.appendChild(colResizer);
+        const rowResizer = document.createElement('div');
+        rowResizer.className = 'row-resizer';
+        rowResizer.contentEditable = 'false';
+        td.appendChild(rowResizer);
         tr.appendChild(td);
       }
       tbody.appendChild(tr);
@@ -1392,34 +1414,50 @@
     tableInsertRange = null;
   }
 
-  // ── Column resize drag ────────────────────────────────────────────────────
+  // ── Column & row resize drag ──────────────────────────────────────────────
 
   let colResize = null;
+  let rowResize = null;
 
   editor.addEventListener('mousedown', e => {
-    if (!e.target.classList.contains('col-resizer')) return;
-    e.preventDefault();
-    const td   = e.target.closest('td');
-    const cols = td.closest('table.nb-table').querySelectorAll('col');
-    e.target.classList.add('resizing');
-    colResize = {
-      handle:  e.target,
-      col:     cols[td.cellIndex],
-      startX:  e.clientX,
-      startW:  td.offsetWidth,
-    };
+    if (e.target.classList.contains('col-resizer')) {
+      e.preventDefault();
+      const td   = e.target.closest('td');
+      const cols = td.closest('table.nb-table').querySelectorAll('col');
+      e.target.classList.add('resizing');
+      colResize = {
+        handle: e.target,
+        col:    cols[td.cellIndex],
+        startX: e.clientX,
+        startW: td.offsetWidth,
+      };
+    } else if (e.target.classList.contains('row-resizer')) {
+      e.preventDefault();
+      const tr = e.target.closest('tr');
+      e.target.classList.add('resizing');
+      rowResize = {
+        handle: e.target,
+        tr:     tr,
+        startY: e.clientY,
+        startH: tr.offsetHeight,
+      };
+    }
   });
 
   document.addEventListener('mousemove', e => {
-    if (!colResize) return;
-    const newW = Math.max(40, colResize.startW + (e.clientX - colResize.startX));
-    colResize.col.style.width = newW + 'px';
+    if (colResize) {
+      const newW = Math.max(40, colResize.startW + (e.clientX - colResize.startX));
+      colResize.col.style.width = newW + 'px';
+    }
+    if (rowResize) {
+      const newH = Math.max(24, rowResize.startH + (e.clientY - rowResize.startY));
+      rowResize.tr.style.height = newH + 'px';
+    }
   });
 
   document.addEventListener('mouseup', () => {
-    if (!colResize) return;
-    colResize.handle.classList.remove('resizing');
-    colResize = null;
+    if (colResize) { colResize.handle.classList.remove('resizing'); colResize = null; }
+    if (rowResize) { rowResize.handle.classList.remove('resizing'); rowResize = null; }
   });
 
   // ── Editor events ────────────────────────────────────────────────────────
