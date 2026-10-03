@@ -164,6 +164,247 @@
       color: var(--danger);
     }
 
+    /* ── Nested notes (tree) ── */
+    .nb-caret {
+      width: 16px;
+      height: 18px;
+      flex-shrink: 0;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 10px;
+      line-height: 18px;
+      padding: 0;
+      margin-right: 2px;
+      cursor: pointer;
+      border-radius: 3px;
+      text-align: center;
+      transition: transform 0.12s, color 0.1s, background 0.1s;
+    }
+
+    .nb-caret:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .nb-caret.collapsed {
+      transform: rotate(-90deg);
+    }
+
+    .nb-caret.empty {
+      visibility: hidden;
+      cursor: default;
+    }
+
+    .notebook-add-child {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 1px 4px;
+      border-radius: 3px;
+      opacity: 0;
+      transition: opacity 0.1s, color 0.1s, background 0.1s;
+      flex-shrink: 0;
+      margin-left: 4px;
+    }
+
+    .notebook-item:hover .notebook-add-child {
+      opacity: 1;
+    }
+
+    .notebook-add-child:hover {
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+    }
+
+    .notebook-item.is-child .notebook-label {
+      font-size: 13px;
+    }
+
+    .notebook-item.dragging {
+      opacity: 0.4;
+    }
+
+    .notebook-item.drop-before {
+      box-shadow: inset 0 2px 0 var(--accent);
+    }
+
+    .notebook-item.drop-after {
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+
+    .notebook-item.drop-inside {
+      background: rgba(0, 120, 212, 0.22);
+      outline: 1px dashed var(--accent);
+      outline-offset: -1px;
+    }
+
+    #notebook-list.drop-root-end {
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+
+    /* ── Delete confirmation modal ── */
+    #confirm-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #confirm-modal.open {
+      display: flex;
+    }
+
+    #confirm-modal-box {
+      background: #2d2d30;
+      border: 1px solid #3e3e42;
+      border-radius: 8px;
+      padding: 22px 26px;
+      width: 340px;
+      max-width: calc(100vw - 32px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+    }
+
+    #confirm-msg {
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--text-muted);
+      word-break: break-word;
+    }
+
+    #confirm-msg strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    #confirm-cancel {
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    #confirm-cancel:hover {
+      background: #3e3e42;
+      color: var(--text);
+    }
+
+    #confirm-ok {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+    }
+
+    #confirm-ok:hover {
+      background: #d63a3a;
+    }
+
+    /* ── Lock screen ── */
+    #lock-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 20000;
+      background: var(--bg);
+      align-items: center;
+      justify-content: center;
+    }
+
+    #lock-screen.open {
+      display: flex;
+    }
+
+    #lock-box {
+      width: 300px;
+      max-width: calc(100vw - 32px);
+      background: var(--sidebar-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px 26px 22px;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+
+    #lock-box.shake {
+      animation: lock-shake 0.4s;
+    }
+
+    @keyframes lock-shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    .lock-icon {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 12px;
+      color: var(--accent);
+    }
+
+    .lock-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .lock-sub {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    #lock-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #lock-password {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 8px 10px;
+      border-radius: 5px;
+      outline: none;
+      text-align: center;
+    }
+
+    #lock-password:focus {
+      border-color: var(--accent);
+    }
+
+    #lock-submit {
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      color: #fff;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 500;
+      padding: 7px 0;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    #lock-submit:hover {
+      background: #005fa3;
+    }
+
+    #lock-error {
+      min-height: 18px;
+      margin-top: 8px;
+      font-size: 12.5px;
+      color: var(--danger);
+    }
+
     /* ── Main area ── */
     #main {
       flex: 1;
@@ -1351,10 +1592,34 @@
       .img-wrap.selected img {
         outline: none !important;
       }
+
+      /* Never print note content while the app is locked */
+      body.locked #app {
+        display: none !important;
+      }
     }
   </style>
 </head>
-<body>
+<body class="locked">
+
+<!-- Lock screen (shown by default on load) -->
+<div id="lock-screen" class="open">
+  <div id="lock-box">
+    <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="4" y="10.5" width="16" height="10.5" rx="2"></rect>
+      <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"></path>
+      <circle cx="12" cy="15.5" r="1.3"></circle>
+    </svg>
+    <div class="lock-title">Notes are locked</div>
+    <div class="lock-sub">Enter your password to continue</div>
+    <form id="lock-form" autocomplete="off">
+      <input type="password" id="lock-password" placeholder="Password" autocomplete="off" spellcheck="false">
+      <button type="submit" id="lock-submit">Unlock</button>
+    </form>
+    <div id="lock-error"></div>
+  </div>
+</div>
+
 <div id="app">
 
   <!-- Sidebar -->
@@ -1481,6 +1746,7 @@
         <button class="sb-btn" id="btn-load">Load File</button>
         <button class="sb-btn" id="btn-save">Save File</button>
         <button class="sb-btn" id="btn-save-pdf">Save as PDF</button>
+        <button class="sb-btn" id="btn-lock" title="Lock notes">&#128274; Lock</button>
       </div>
     </div>
 
@@ -1505,6 +1771,18 @@
     <div class="tbl-modal-actions">
       <button id="tbl-cancel">Cancel</button>
       <button id="tbl-insert">Insert</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="confirm-modal">
+  <div id="confirm-modal-box" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-msg">
+    <div class="tbl-modal-title" id="confirm-title">Delete note?</div>
+    <p id="confirm-msg"></p>
+    <div class="tbl-modal-actions">
+      <button id="confirm-cancel">Cancel</button>
+      <button id="confirm-ok">Delete</button>
     </div>
   </div>
 </div>
@@ -1702,7 +1980,7 @@
       notebooks: [{
         id,
         name: 'My First Notebook',
-        content: '<p><b>Welcome to Notes!</b></p><p>This is your personal notebook. Start typing here, or use the toolbar above to format your text.</p><p></p><ul><li>Create new notebooks in the left sidebar</li><li>Double-click a notebook name to rename it</li><li>Use <b>Save File</b> to export your notes as JSON</li><li>Press <b>Ctrl+S</b> as a shortcut to save</li></ul>',
+        content: '<p><b>Welcome to Notes!</b></p><p>This is your personal notebook. Start typing here, or use the toolbar above to format your text.</p><p></p><ul><li>Create new notebooks in the left sidebar</li><li>Double-click a notebook name to rename it</li><li>Hover a note and click <b>+</b> to add a sub-note; drag notes to reorder or nest them</li><li>Use <b>Save File</b> to export your notes as JSON</li><li>Press <b>Ctrl+S</b> as a shortcut to save</li></ul>',
         createdAt: Date.now(),
         updatedAt: Date.now()
       }],
@@ -1719,6 +1997,7 @@
         if (parsed && Array.isArray(parsed.notebooks) && parsed.notebooks.length > 0) {
           state = parsed;
           if (!Array.isArray(state.dictionary)) state.dictionary = [];
+          normalizeTree();
           return;
         }
       }
@@ -1855,39 +2134,252 @@
   const notebookTitle = document.getElementById('notebook-title');
   const wordCountEl = document.getElementById('word-count');
 
-  function render() {
-    // Rebuild sidebar list
-    notebookList.innerHTML = '';
-    state.notebooks.forEach(nb => {
-      const li = document.createElement('li');
-      li.className = 'notebook-item' + (nb.id === state.activeId ? ' active' : '');
-      li.dataset.id = nb.id;
+  // ── Note tree helpers ────────────────────────────────────────────────────
+  // Notes are stored flat in state.notebooks. Each note may carry a
+  // `parentId` (null/undefined = top level) and a `collapsed` flag.
+  // Sibling order is simply the order notes appear in the array.
 
-      const label = document.createElement('span');
-      label.className = 'notebook-label';
-      label.textContent = nb.name;
-      label.title = nb.name;
+  function findNote(id) {
+    return state.notebooks.find(n => n.id === id);
+  }
 
-      const del = document.createElement('button');
-      del.className = 'notebook-delete';
-      del.textContent = '×';
-      del.title = 'Delete notebook';
-      del.addEventListener('click', e => {
-        e.stopPropagation();
-        deleteNotebook(nb.id);
+  function childrenOf(parentId) {
+    return state.notebooks.filter(n => (n.parentId || null) === (parentId || null));
+  }
+
+  function hasChildren(id) {
+    return state.notebooks.some(n => n.parentId === id);
+  }
+
+  // Returns the ids of every note nested anywhere beneath `id`.
+  function descendantIds(id) {
+    const out = [];
+    const stack = [id];
+    while (stack.length) {
+      const cur = stack.pop();
+      state.notebooks.forEach(n => {
+        if (n.parentId === cur) { out.push(n.id); stack.push(n.id); }
       });
+    }
+    return out;
+  }
 
-      li.appendChild(label);
-      li.appendChild(del);
+  function isDescendantOf(id, ancestorId) {
+    let cur = findNote(id);
+    const seen = new Set();
+    while (cur && cur.parentId && !seen.has(cur.id)) {
+      seen.add(cur.id);
+      if (cur.parentId === ancestorId) return true;
+      cur = findNote(cur.parentId);
+    }
+    return false;
+  }
 
-      li.addEventListener('click', () => selectNotebook(nb.id));
-      label.addEventListener('dblclick', e => {
-        e.stopPropagation();
-        beginRename(nb.id, li, label);
-      });
-
-      notebookList.appendChild(li);
+  // Repairs older saved files (no parentId) and any broken/cyclic links.
+  function normalizeTree() {
+    const ids = new Set(state.notebooks.map(n => n.id));
+    state.notebooks.forEach(n => {
+      if (!n.parentId || !ids.has(n.parentId) || n.parentId === n.id) n.parentId = null;
+      n.collapsed = !!n.collapsed;
     });
+    state.notebooks.forEach(n => {
+      const seen = new Set([n.id]);
+      let cur = n;
+      while (cur && cur.parentId) {
+        if (seen.has(cur.parentId)) { n.parentId = null; break; }
+        seen.add(cur.parentId);
+        cur = findNote(cur.parentId);
+      }
+    });
+  }
+
+  function buildNoteItem(nb, depth) {
+    const li = document.createElement('li');
+    li.className = 'notebook-item' + (nb.id === state.activeId ? ' active' : '') + (depth > 0 ? ' is-child' : '');
+    li.dataset.id = nb.id;
+    li.style.paddingLeft = (6 + depth * 16) + 'px';
+    li.draggable = true;
+
+    const caret = document.createElement('button');
+    caret.className = 'nb-caret';
+    caret.textContent = '▾';
+    if (hasChildren(nb.id)) {
+      caret.title = nb.collapsed ? 'Expand' : 'Collapse';
+      if (nb.collapsed) caret.classList.add('collapsed');
+      caret.addEventListener('click', e => {
+        e.stopPropagation();
+        nb.collapsed = !nb.collapsed;
+        saveState();
+        render();
+      });
+    } else {
+      caret.classList.add('empty');
+      caret.tabIndex = -1;
+    }
+
+    const label = document.createElement('span');
+    label.className = 'notebook-label';
+    label.textContent = nb.name;
+    label.title = nb.name + ' — double-click to rename, drag to reorder';
+
+    const addChild = document.createElement('button');
+    addChild.className = 'notebook-add-child';
+    addChild.textContent = '+';
+    addChild.title = 'Add sub-note';
+    addChild.addEventListener('click', e => {
+      e.stopPropagation();
+      addNotebook(nb.id);
+    });
+
+    const del = document.createElement('button');
+    del.className = 'notebook-delete';
+    del.textContent = '×';
+    del.title = 'Delete note';
+    del.addEventListener('click', e => {
+      e.stopPropagation();
+      deleteNotebook(nb.id);
+    });
+
+    li.appendChild(caret);
+    li.appendChild(label);
+    li.appendChild(addChild);
+    li.appendChild(del);
+
+    li.addEventListener('click', () => selectNotebook(nb.id));
+    label.addEventListener('dblclick', e => {
+      e.stopPropagation();
+      beginRename(nb.id, li, label);
+    });
+
+    attachDragHandlers(li, nb);
+    return li;
+  }
+
+  function renderTree(parentId, depth) {
+    childrenOf(parentId).forEach(nb => {
+      notebookList.appendChild(buildNoteItem(nb, depth));
+      if (!nb.collapsed) renderTree(nb.id, depth + 1);
+    });
+  }
+
+  // ── Drag & drop reordering ───────────────────────────────────────────────
+
+  const NOTE_DRAG_TYPE = 'application/x-note-id';
+  let dragNoteId = null;
+
+  function clearDropMarkers() {
+    notebookList.querySelectorAll('.drop-before, .drop-after, .drop-inside').forEach(el => {
+      el.classList.remove('drop-before', 'drop-after', 'drop-inside');
+    });
+    notebookList.classList.remove('drop-root-end');
+  }
+
+  function dropZoneFor(li, clientY) {
+    const rect = li.getBoundingClientRect();
+    const y = clientY - rect.top;
+    if (y < rect.height * 0.28) return 'before';
+    if (y > rect.height * 0.72) return 'after';
+    return 'inside';
+  }
+
+  function attachDragHandlers(li, nb) {
+    li.addEventListener('dragstart', e => {
+      dragNoteId = nb.id;
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData(NOTE_DRAG_TYPE, nb.id); } catch (_) {}
+      setTimeout(() => li.classList.add('dragging'), 0);
+    });
+
+    li.addEventListener('dragend', () => {
+      dragNoteId = null;
+      li.classList.remove('dragging');
+      clearDropMarkers();
+    });
+
+    li.addEventListener('dragover', e => {
+      if (!dragNoteId) return;
+      if (dragNoteId === nb.id || isDescendantOf(nb.id, dragNoteId)) {
+        clearDropMarkers();
+        return; // can't drop a note onto itself or into its own sub-notes
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = 'move';
+      const zone = dropZoneFor(li, e.clientY);
+      clearDropMarkers();
+      li.classList.add('drop-' + zone);
+    });
+
+    li.addEventListener('dragleave', e => {
+      if (!li.contains(e.relatedTarget)) {
+        li.classList.remove('drop-before', 'drop-after', 'drop-inside');
+      }
+    });
+
+    li.addEventListener('drop', e => {
+      if (!dragNoteId) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const zone = dropZoneFor(li, e.clientY);
+      const movingId = dragNoteId;
+      dragNoteId = null;
+      clearDropMarkers();
+      moveNote(movingId, nb.id, zone);
+    });
+  }
+
+  // Dropping on the empty area below the list moves the note to the top level, at the end.
+  notebookList.addEventListener('dragover', e => {
+    if (!dragNoteId || e.target !== notebookList) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    clearDropMarkers();
+    notebookList.classList.add('drop-root-end');
+  });
+
+  notebookList.addEventListener('dragleave', e => {
+    if (e.target === notebookList) notebookList.classList.remove('drop-root-end');
+  });
+
+  notebookList.addEventListener('drop', e => {
+    if (!dragNoteId || e.target !== notebookList) return;
+    e.preventDefault();
+    const movingId = dragNoteId;
+    dragNoteId = null;
+    clearDropMarkers();
+    moveNote(movingId, null, 'root-end');
+  });
+
+  function moveNote(id, targetId, zone) {
+    const nb = findNote(id);
+    if (!nb) return;
+    if (targetId && (targetId === id || isDescendantOf(targetId, id))) return;
+    const target = targetId ? findNote(targetId) : null;
+
+    state.notebooks.splice(state.notebooks.indexOf(nb), 1);
+
+    if (zone === 'inside' && target) {
+      nb.parentId = target.id;
+      target.collapsed = false;
+      state.notebooks.push(nb); // becomes the last sub-note of target
+    } else if ((zone === 'before' || zone === 'after') && target) {
+      nb.parentId = target.parentId || null;
+      const idx = state.notebooks.indexOf(target);
+      state.notebooks.splice(zone === 'before' ? idx : idx + 1, 0, nb);
+    } else {
+      nb.parentId = null;
+      state.notebooks.push(nb);
+    }
+
+    saveState();
+    render();
+    showStatus('Note moved');
+  }
+
+  function render() {
+    // Rebuild sidebar tree
+    notebookList.innerHTML = '';
+    renderTree(null, 0);
 
     // Update editor header title
     const active = getActiveNotebook();
@@ -1911,13 +2403,20 @@
 
   // ── Notebook CRUD ────────────────────────────────────────────────────────
 
-  function addNotebook() {
+  function addNotebook(parentId) {
+    parentId = (typeof parentId === 'string') ? parentId : null;
     flushEditorContent();
     const id = genId();
+    if (parentId) {
+      const parent = findNote(parentId);
+      if (parent) parent.collapsed = false;
+    }
     state.notebooks.push({
       id,
-      name: 'New Notebook',
+      name: parentId ? 'New Sub-note' : 'New Notebook',
       content: '',
+      parentId,
+      collapsed: false,
       createdAt: Date.now(),
       updatedAt: Date.now()
     });
@@ -1941,20 +2440,80 @@
   }
 
   function deleteNotebook(id) {
-    if (state.notebooks.length <= 1) {
+    const nb = findNote(id);
+    if (!nb) return;
+    const subIds = descendantIds(id);
+    const removeIds = new Set([id, ...subIds]);
+
+    if (state.notebooks.length - removeIds.size < 1) {
       showStatus('Cannot delete the last notebook');
       return;
     }
-    const idx = state.notebooks.findIndex(n => n.id === id);
-    state.notebooks.splice(idx, 1);
-    if (state.activeId === id) {
-      state.activeId = state.notebooks[Math.max(0, idx - 1)].id;
+    const isSub = !!nb.parentId;
+    const title = isSub ? 'Delete sub-note?' : 'Delete note?';
+    const msg = document.createElement('span');
+    msg.append('Are you sure you want to delete ');
+    const strong = document.createElement('strong');
+    strong.textContent = '"' + nb.name + '"';
+    msg.append(strong);
+    if (subIds.length > 0) {
+      msg.append(' and its ' + subIds.length + (subIds.length === 1 ? ' sub-note' : ' sub-notes'));
+    }
+    msg.append('? This can\'t be undone.');
+
+    showConfirm(title, msg, () => performDelete(nb, subIds, removeIds));
+  }
+
+  function performDelete(nb, subIds, removeIds) {
+    flushEditorContent();
+    const idx = state.notebooks.indexOf(nb);
+    const parentId = nb.parentId || null;
+    state.notebooks = state.notebooks.filter(n => !removeIds.has(n.id));
+
+    if (removeIds.has(state.activeId)) {
+      const parent = parentId ? findNote(parentId) : null;
+      state.activeId = parent ? parent.id : state.notebooks[Math.max(0, Math.min(idx - 1, state.notebooks.length - 1))].id;
       lastRenderedId = null;
     }
     saveState();
     render();
-    showStatus('Notebook deleted');
+    showStatus(subIds.length > 0 ? 'Note and sub-notes deleted' : 'Note deleted');
   }
+
+  // ── Confirmation dialog ─────────────────────────────────────────────────
+
+  const confirmModal = document.getElementById('confirm-modal');
+  const confirmTitle = document.getElementById('confirm-title');
+  const confirmMsg = document.getElementById('confirm-msg');
+  const confirmOk = document.getElementById('confirm-ok');
+  const confirmCancel = document.getElementById('confirm-cancel');
+  let confirmAction = null;
+
+  function showConfirm(title, messageNode, onConfirm) {
+    confirmTitle.textContent = title;
+    confirmMsg.innerHTML = '';
+    confirmMsg.appendChild(messageNode);
+    confirmAction = onConfirm;
+    confirmModal.classList.add('open');
+    setTimeout(() => confirmCancel.focus(), 30); // safe default: Cancel
+  }
+
+  function closeConfirm() {
+    confirmModal.classList.remove('open');
+    confirmAction = null;
+  }
+
+  confirmOk.addEventListener('click', () => {
+    const action = confirmAction;
+    closeConfirm();
+    if (action) action();
+  });
+  confirmCancel.addEventListener('click', closeConfirm);
+  confirmModal.addEventListener('click', e => { if (e.target === confirmModal) closeConfirm(); });
+  document.addEventListener('keydown', e => {
+    if (!confirmModal.classList.contains('open')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeConfirm(); }
+  });
 
   function beginRename(id, li, label) {
     const nb = state.notebooks.find(n => n.id === id);
@@ -1966,6 +2525,8 @@
     input.maxLength = 80;
 
     li.replaceChild(input, label);
+    li.draggable = false; // allow selecting text in the input
+    input.addEventListener('click', e => e.stopPropagation());
     input.focus();
     input.select();
 
@@ -1977,6 +2538,7 @@
       label.textContent = nb.name;
       label.title = nb.name;
       li.replaceChild(label, input);
+      li.draggable = true;
       if (nb.id === state.activeId) {
         notebookTitle.value = nb.name;
       }
@@ -1986,6 +2548,7 @@
       label.textContent = nb.name;
       label.title = nb.name;
       li.replaceChild(label, input);
+      li.draggable = true;
     }
 
     input.addEventListener('blur', commit);
@@ -2197,6 +2760,7 @@
         if (parsed && Array.isArray(parsed.notebooks) && parsed.notebooks.length > 0) {
           state = parsed;
           if (!Array.isArray(state.dictionary)) state.dictionary = [];
+          normalizeTree();
           lastRenderedId = null;
           saveState();
           render();
@@ -2271,6 +2835,7 @@
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
       e.preventDefault();
+      if (isLocked) return;
       saveToFile();
     }
   });
@@ -3751,9 +4316,83 @@
     document.execCommand('enableAbsolutePositionEditor', false, false);
   } catch (_) {}
 
+  // ── Lock screen ──────────────────────────────────────────────────────────
+  // Simple privacy lock (not encryption): the password lives here in plain
+  // text by design. The app starts locked every time the page loads.
+
+  const APP_PASSWORD = 'K33p0ut';
+  let isLocked = true;
+
+  const lockScreen = document.getElementById('lock-screen');
+  const lockBox = document.getElementById('lock-box');
+  const lockForm = document.getElementById('lock-form');
+  const lockPassword = document.getElementById('lock-password');
+  const lockError = document.getElementById('lock-error');
+
+  // Everything except the lock screen itself becomes non-interactive while locked.
+  function setAppInert(on) {
+    Array.from(document.body.children).forEach(el => {
+      if (el === lockScreen || el.tagName === 'SCRIPT') return;
+      if (on) el.setAttribute('inert', '');
+      else el.removeAttribute('inert');
+    });
+  }
+
+  function lockApp() {
+    try { flushEditorContent(); saveState(); } catch (_) {}
+    clearTimeout(autoSaveTimer);
+    closeAllMenus();
+    ctxHide();
+    spellHide();
+    deselectImage();
+    tableModal.classList.remove('open');
+    dictModal.classList.remove('open');
+    closeConfirm();
+    if (document.activeElement && document.activeElement !== document.body) {
+      document.activeElement.blur();
+    }
+    window.getSelection().removeAllRanges();
+
+    isLocked = true;
+    document.body.classList.add('locked');
+    setAppInert(true);
+    lockError.textContent = '';
+    lockPassword.value = '';
+    lockScreen.classList.add('open');
+    setTimeout(() => lockPassword.focus(), 30);
+  }
+
+  function unlockApp() {
+    isLocked = false;
+    document.body.classList.remove('locked');
+    setAppInert(false);
+    lockScreen.classList.remove('open');
+    lockPassword.value = '';
+    lockError.textContent = '';
+    editor.focus();
+    showStatus('Unlocked');
+  }
+
+  lockForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if (lockPassword.value === APP_PASSWORD) {
+      unlockApp();
+    } else {
+      lockError.textContent = 'Incorrect password';
+      lockPassword.select();
+      lockBox.classList.remove('shake');
+      void lockBox.offsetWidth; // restart the animation
+      lockBox.classList.add('shake');
+    }
+  });
+
+  lockPassword.addEventListener('input', () => { lockError.textContent = ''; });
+
+  document.getElementById('btn-lock').addEventListener('click', lockApp);
+
   loadState();
   render();
-  editor.focus();
+  lockApp(); // locked by default on every load
 </script>
 </body>
 </html>
